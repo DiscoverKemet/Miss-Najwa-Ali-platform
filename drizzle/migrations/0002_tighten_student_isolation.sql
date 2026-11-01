@@ -1,0 +1,7 @@
+CREATE OR REPLACE FUNCTION public.student_is_active() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS (SELECT 1 FROM public.students WHERE id = auth.uid() AND status = 'active') $$;
+CREATE POLICY "active student reads own assignments" ON public.assignments FOR SELECT TO authenticated USING (student_id = auth.uid() AND public.student_is_active());
+ALTER POLICY "assignments read" ON public.assignments USING (public.is_teacher() OR (student_id = auth.uid() AND public.student_is_active()));
+ALTER POLICY "update assignments" ON public.assignments USING (public.is_teacher() OR (student_id = auth.uid() AND public.student_is_active() AND submitted_at IS NULL)) WITH CHECK (public.is_teacher() OR (student_id = auth.uid() AND group_id = public.my_group_id() AND public.student_is_active()));
+ALTER POLICY "delete assignments" ON public.assignments USING (public.is_teacher() OR (student_id = auth.uid() AND public.student_is_active() AND submitted_at IS NULL));
+ALTER POLICY "images read" ON public.assignment_images USING (public.is_teacher() OR (public.student_is_active() AND EXISTS (SELECT 1 FROM public.assignments a WHERE a.id = assignment_id AND a.student_id = auth.uid())));
+ALTER POLICY "assignments: read own or teacher" ON storage.objects USING (bucket_id = 'assignments' AND (public.is_teacher() OR ((storage.foldername(name))[1] = auth.uid()::text AND public.student_is_active())));

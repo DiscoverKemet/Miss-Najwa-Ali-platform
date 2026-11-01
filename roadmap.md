@@ -1,0 +1,4 @@
+- [ ] Secure teacher bootstrap and student signup
+- [ ] Arabic RTL authentication and functional teacher/student workspace
+- [ ] Create a polished blue-and-gold 3D visual direction for the organized dashboard
+- [ ] Validate storage, isolation, migrations and documentation
